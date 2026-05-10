@@ -29,10 +29,13 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100">
+      <body className="relative min-h-full text-slate-900 dark:text-slate-100">
+        <div className="app-page-bg" aria-hidden="true" />
         <AuthSessionProvider>
-          <SignFlowHeader />
-          <main className="flex flex-1 flex-col">{children}</main>
+          <div className="relative z-10 flex min-h-full flex-col">
+            <SignFlowHeader />
+            <main className="flex min-h-0 flex-1 flex-col">{children}</main>
+          </div>
         </AuthSessionProvider>
       </body>
     </html>

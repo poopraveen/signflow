@@ -19,8 +19,133 @@
   }
 }
 
+/**
+ * Full-page backdrop: “sealed envelope” palette — indigo mail flap, violet fold,
+ * emerald seal accent, warm paper highlights. Orbs drift slowly for depth.
+ */
+.app-page-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(
+    155deg,
+    #f3f6ff 0%,
+    #eef2ff 28%,
+    #f0fdf9 55%,
+    #faf5ff 78%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 200%;
+  animation: envelope-paper-shift 28s ease-in-out infinite;
+}
+
+.app-page-bg::before,
+.app-page-bg::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.5;
+  animation: envelope-orb-float 20s ease-in-out infinite;
+}
+
+.app-page-bg::before {
+  width: min(92vw, 540px);
+  height: min(92vw, 540px);
+  top: -18%;
+  right: -12%;
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.42) 0%,
+    rgba(129, 140, 248, 0.15) 45%,
+    transparent 68%
+  );
+}
+
+.app-page-bg::after {
+  width: min(110vw, 640px);
+  height: min(110vw, 640px);
+  bottom: -25%;
+  left: -18%;
+  background: radial-gradient(
+    circle,
+    rgba(52, 211, 153, 0.28) 0%,
+    rgba(139, 92, 246, 0.22) 42%,
+    transparent 70%
+  );
+  animation-duration: 24s;
+  animation-delay: -10s;
+}
+
+.dark .app-page-bg {
+  background: linear-gradient(
+    155deg,
+    #070b14 0%,
+    #0f172a 35%,
+    #0c1924 65%,
+    #111827 100%
+  );
+  background-size: 200% 200%;
+}
+
+.dark .app-page-bg::before {
+  opacity: 0.38;
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.35) 0%,
+    rgba(79, 70, 229, 0.12) 50%,
+    transparent 70%
+  );
+}
+
+.dark .app-page-bg::after {
+  opacity: 0.32;
+  background: radial-gradient(
+    circle,
+    rgba(52, 211, 153, 0.18) 0%,
+    rgba(139, 92, 246, 0.14) 45%,
+    transparent 72%
+  );
+}
+
+@keyframes envelope-paper-shift {
+  0%,
+  100% {
+    background-position: 0% 40%;
+  }
+  50% {
+    background-position: 100% 60%;
+  }
+}
+
+@keyframes envelope-orb-float {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(3%, 5%) scale(1.06);
+  }
+  66% {
+    transform: translate(-4%, 2%) scale(0.94);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app-page-bg {
+    animation: none;
+    background-size: 100% 100%;
+  }
+
+  .app-page-bg::before,
+  .app-page-bg::after {
+    animation: none;
+  }
+}
+
 body {
-  background: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), system-ui, sans-serif;
 }

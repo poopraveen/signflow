@@ -27,9 +27,13 @@ function toEnvelope(doc: Record<string, unknown>): Envelope {
       : completedRaw
         ? String(completedRaw)
         : undefined;
+  const descRaw = doc.description;
+  const description =
+    typeof descRaw === "string" && descRaw.trim().length > 0 ? descRaw.trim() : undefined;
   return {
     id: doc.id as string,
     title: doc.title as string,
+    ...(description ? { description } : {}),
     status: doc.status as Envelope["status"],
     signers: doc.signers as Envelope["signers"],
     fields: doc.fields as Envelope["fields"],
@@ -81,6 +85,9 @@ export async function insertEnvelope(envelope: Envelope, pdfBuffer: Buffer): Pro
     createdAt: new Date(envelope.createdAt),
     completedAt: envelope.completedAt ? new Date(envelope.completedAt) : undefined,
     ...(envelope.ownerUserId ? { ownerUserId: envelope.ownerUserId } : {}),
+    ...(envelope.description?.trim()
+      ? { description: envelope.description.trim() }
+      : {}),
   });
 }
 
@@ -97,6 +104,9 @@ export async function replaceEnvelope(envelope: Envelope): Promise<void> {
         fields: envelope.fields,
         completedAt: envelope.completedAt ? new Date(envelope.completedAt) : null,
         ...(envelope.ownerUserId ? { ownerUserId: envelope.ownerUserId } : {}),
+        ...(envelope.description?.trim()
+          ? { description: envelope.description.trim() }
+          : { description: null }),
       },
     },
   );

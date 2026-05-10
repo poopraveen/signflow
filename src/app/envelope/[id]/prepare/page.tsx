@@ -217,19 +217,30 @@ export default function PrepareEnvelopePage() {
 
   if (!envelope) {
     return (
-      <div className="flex flex-1 items-center justify-center text-slate-500">Loading…</div>
+      <div className="flex flex-1 items-center justify-center px-4 text-slate-500">Loading…</div>
     );
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:flex-row">
-      <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-72">
-        <Link href="/dashboard" className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-5 px-3 pb-8 pt-4 sm:gap-6 sm:px-4 sm:pb-10 sm:pt-8 lg:flex-row lg:items-start">
+      <aside className="flex w-full shrink-0 flex-col gap-4 lg:sticky lg:top-16 lg:w-72 lg:self-start">
+        <Link
+          href="/dashboard"
+          className="inline-flex min-h-11 w-fit items-center text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+        >
           ← Dashboard
         </Link>
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">Prepare</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{envelope.title}</p>
+          {envelope.description ? (
+            <div className="mt-3 rounded-lg border border-slate-200/80 bg-slate-50/90 p-3 text-xs text-slate-600 backdrop-blur-sm dark:border-slate-700/70 dark:bg-slate-800/60 dark:text-slate-300">
+              <p className="font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                Context
+              </p>
+              <p className="mt-1 whitespace-pre-wrap">{envelope.description}</p>
+            </div>
+          ) : null}
         </div>
 
         <div>
@@ -237,7 +248,7 @@ export default function PrepareEnvelopePage() {
           <select
             value={signerId}
             onChange={(e) => setSignerPick(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+            className="mt-1 min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-white"
           >
             {envelope.signers.map((s) => (
               <option key={s.id} value={s.id}>
@@ -262,7 +273,7 @@ export default function PrepareEnvelopePage() {
                 key={k}
                 type="button"
                 onClick={() => setTool(tool === k ? null : k)}
-                className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                className={`min-h-10 rounded-lg px-3 py-2 text-sm font-medium ${
                   tool === k
                     ? "bg-indigo-600 text-white"
                     : "bg-slate-100 text-slate-800 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
@@ -304,7 +315,7 @@ export default function PrepareEnvelopePage() {
             type="button"
             onClick={send}
             disabled={sending || envelope.fields.length === 0}
-            className="rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-40"
+            className="min-h-11 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white shadow-sm shadow-indigo-600/20 hover:bg-indigo-500 disabled:opacity-40"
           >
             {sending ? "Sending…" : "Send envelope"}
           </button>
@@ -321,29 +332,41 @@ export default function PrepareEnvelopePage() {
         </div>
       </aside>
 
-      <div ref={overlayWrapRef} className="min-w-0 flex-1 overflow-auto rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+      <div
+        ref={overlayWrapRef}
+        className="min-h-[min(65vh,640px)] min-w-0 flex-1 overflow-auto rounded-xl border border-slate-200/80 bg-white/85 p-3 shadow-sm backdrop-blur-md dark:border-slate-700/70 dark:bg-slate-900/85 sm:min-h-0 sm:p-4"
+      >
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-lg border border-slate-300 px-3 py-1 text-sm disabled:opacity-40 dark:border-slate-600"
+              className="min-h-11 min-w-[4.5rem] rounded-lg border border-slate-300 px-3 text-sm font-medium disabled:opacity-40 dark:border-slate-600"
             >
               Prev
             </button>
+            <span className="text-sm tabular-nums text-slate-600 dark:text-slate-400">
+              {numPages != null ? (
+                <>
+                  Page {page} / {numPages}
+                </>
+              ) : (
+                <>Page {page}</>
+              )}
+            </span>
             <button
               type="button"
               disabled={numPages != null && page >= numPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border border-slate-300 px-3 py-1 text-sm disabled:opacity-40 dark:border-slate-600"
+              className="min-h-11 min-w-[4.5rem] rounded-lg border border-slate-300 px-3 text-sm font-medium disabled:opacity-40 dark:border-slate-600"
             >
               Next
             </button>
           </div>
           {tool && (
-            <span className="text-sm text-indigo-600 dark:text-indigo-400">
-              Placing: {tool} — click on the document
+            <span className="text-xs text-indigo-600 sm:text-sm dark:text-indigo-400">
+              Placing: {tool} — tap the document
             </span>
           )}
         </div>
@@ -365,12 +388,12 @@ export default function PrepareEnvelopePage() {
 
       {sendOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-4 backdrop-blur-sm sm:items-center"
           role="dialog"
           aria-modal="true"
           aria-labelledby="send-success-title"
         >
-          <div className="max-h-[90vh] max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+          <div className="max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-2xl border border-slate-200/80 bg-white/95 p-5 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 sm:rounded-2xl sm:p-6">
             <div className="flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/40">
               <span
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-lg text-white"
@@ -431,17 +454,17 @@ export default function PrepareEnvelopePage() {
                 </li>
               ))}
             </ul>
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-col gap-2 sm:flex-row">
               <Link
                 href="/dashboard"
-                className="flex flex-1 items-center justify-center rounded-lg border border-slate-300 py-2 text-center text-sm font-medium dark:border-slate-600"
+                className="flex min-h-11 flex-1 items-center justify-center rounded-lg border border-slate-300 py-2 text-center text-sm font-medium dark:border-slate-600"
               >
                 Dashboard
               </Link>
               {inviteLinks[0] && (
                 <Link
                   href={inviteLinks[0].url}
-                  className="flex flex-1 items-center justify-center rounded-lg bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-500"
+                  className="flex min-h-11 flex-1 items-center justify-center rounded-lg bg-indigo-600 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-500"
                 >
                   Open first signer
                 </Link>

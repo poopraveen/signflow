@@ -82,28 +82,28 @@ export function SignaturePad({ onApply, onCancel }: Props) {
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+    <div className="rounded-xl border border-slate-200/80 bg-white/95 p-4 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 sm:p-5">
       <p className="mb-2 text-sm text-slate-600 dark:text-slate-400">Sign in the box</p>
       <canvas
         ref={canvasRef}
-        className="h-40 w-full cursor-crosshair touch-none rounded-lg border border-dashed border-slate-300 bg-slate-50 dark:border-slate-600 dark:bg-slate-800"
+        className="h-44 w-full cursor-crosshair touch-none rounded-lg border border-dashed border-slate-300 bg-slate-50 sm:h-40 dark:border-slate-600 dark:bg-slate-800"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={endStroke}
         onPointerCancel={endStroke}
       />
-      <div className="mt-3 flex flex-wrap justify-end gap-2">
+      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           Cancel
         </button>
         <button
           type="button"
           onClick={clear}
-          className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           Clear
         </button>
@@ -111,7 +111,7 @@ export function SignaturePad({ onApply, onCancel }: Props) {
           type="button"
           disabled={!hasInk}
           onClick={apply}
-          className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-500 disabled:opacity-40"
+          className="min-h-11 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-40"
         >
           Apply signature
         </button>

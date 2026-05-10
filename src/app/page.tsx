@@ -2,16 +2,16 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="mx-auto flex max-w-6xl flex-1 flex-col gap-16 px-4 py-16">
-      <section className="grid gap-10 lg:grid-cols-2 lg:items-center">
+    <div className="mx-auto flex max-w-6xl flex-1 flex-col gap-12 px-3 py-10 sm:gap-16 sm:px-4 sm:py-16">
+      <section className="grid gap-8 sm:gap-10 lg:grid-cols-2 lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
             E-signatures in your stack
           </p>
-          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 dark:text-white lg:text-5xl">
+          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-4xl lg:text-5xl">
             Send agreements. Tag PDFs. Collect signatures.
           </h1>
-          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
+          <p className="mt-4 text-base text-slate-600 sm:text-lg dark:text-slate-400">
             Sign in with Google, send PDFs for signature, and issue API keys so other systems can
             create envelopes and email signers via{" "}
             <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
@@ -19,22 +19,22 @@ export default function Home() {
             </code>
             . Data lives in MongoDB; PDFs use GridFS.
           </p>
-          <div className="mt-8 flex flex-wrap gap-4">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
             <Link
               href="/envelope/new"
-              className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-500"
             >
               Create an envelope
             </Link>
             <Link
               href="/dashboard"
-              className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+              className="inline-flex min-h-12 items-center justify-center rounded-full border border-slate-300/90 bg-white/90 px-6 py-3 text-sm font-semibold text-slate-800 shadow-sm backdrop-blur-sm hover:bg-white dark:border-slate-600/80 dark:bg-slate-900/90 dark:text-slate-100 dark:hover:bg-slate-900"
             >
               Open dashboard
             </Link>
           </div>
         </div>
-        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur-md dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-8">
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">What you can do</h2>
           <ul className="mt-4 space-y-4 text-slate-600 dark:text-slate-400">
             <li className="flex gap-3">

@@ -175,6 +175,9 @@ components:
       properties:
         title:
           type: string
+        description:
+          type: string
+          description: Optional internal context stored with the envelope (not required for signing).
         documentPdfBase64:
           type: string
           description: Base64-encoded PDF bytes (no data URL prefix). Max 16 MB decoded.
@@ -309,6 +312,9 @@ components:
           type: string
         title:
           type: string
+        description:
+          type: string
+          description: Optional sender context when present.
         status:
           type: string
         signers:

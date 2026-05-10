@@ -138,6 +138,7 @@ export async function POST(req: Request) {
 
   let body: {
     title?: string;
+    description?: string;
     documentPdfBase64?: string;
     signers?: unknown;
     fields?: unknown;
@@ -150,6 +151,7 @@ export async function POST(req: Request) {
   }
 
   const title = String(body.title ?? "").trim();
+  const descriptionV1 = String(body.description ?? "").trim();
   const b64 = String(body.documentPdfBase64 ?? "").trim();
   if (!title || !b64) {
     return NextResponse.json(
@@ -192,6 +194,7 @@ export async function POST(req: Request) {
   const draft: Envelope = {
     id,
     title,
+    ...(descriptionV1 ? { description: descriptionV1 } : {}),
     status: "draft",
     signers,
     fields,

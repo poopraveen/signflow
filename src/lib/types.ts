@@ -30,6 +30,8 @@ export type EnvelopeStatus = "draft" | "sent" | "completed";
 export interface Envelope {
   id: string;
   title: string;
+  /** Optional expanded context for the sender (e.g. AI-polished notes); not shown to signers in the current UI. */
+  description?: string;
   status: EnvelopeStatus;
   signers: Signer[];
   fields: Field[];

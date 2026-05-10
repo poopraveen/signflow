@@ -19,7 +19,9 @@ const PdfPageWithOverlay = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-96 items-center justify-center text-slate-500">Loading PDF viewer…</div>
+      <div className="flex min-h-[50vh] items-center justify-center px-4 text-center text-sm text-slate-500">
+        Loading PDF viewer…
+      </div>
     ),
   },
 );
@@ -138,21 +140,31 @@ function SignPageContent() {
 
   if (loadError) {
     return (
-      <div className="mx-auto flex max-w-lg flex-1 flex-col justify-center px-4 py-16 text-center">
-        <p className="text-slate-700 dark:text-slate-300">{loadError}</p>
-        <Link
-          href="/dashboard"
-          className="mt-6 text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-        >
-          ← Back to dashboard
-        </Link>
+      <div className="mx-auto flex max-w-lg flex-1 flex-col justify-center px-4 py-12 text-center sm:py-16">
+        <div className="rounded-2xl border border-slate-200/80 bg-white/85 p-6 shadow-sm backdrop-blur-md dark:border-slate-700/70 dark:bg-slate-900/85">
+          <p className="text-slate-700 dark:text-slate-300">{loadError}</p>
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <Link
+              href="/"
+              className="inline-flex min-h-11 items-center justify-center rounded-full border border-slate-300 px-4 text-sm font-medium hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800"
+            >
+              Home
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex min-h-11 items-center justify-center rounded-full bg-indigo-600 px-4 text-sm font-medium text-white hover:bg-indigo-500"
+            >
+              Dashboard
+            </Link>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!envelope || !signerId) {
     return (
-      <div className="flex flex-1 items-center justify-center text-slate-500">Loading…</div>
+      <div className="flex flex-1 items-center justify-center px-4 text-slate-500">Loading…</div>
     );
   }
 
@@ -160,16 +172,19 @@ function SignPageContent() {
   const remaining = myFields.filter((f) => !f.value).length;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-8 lg:flex-row">
-      <aside className="flex w-full shrink-0 flex-col gap-4 lg:w-72">
-        <Link href="/dashboard" className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+    <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-5 px-3 pb-8 pt-4 sm:gap-6 sm:px-4 sm:pb-10 sm:pt-8 lg:flex-row lg:items-start">
+      <aside className="flex w-full shrink-0 flex-col gap-4 lg:sticky lg:top-16 lg:w-72 lg:self-start">
+        <Link
+          href="/dashboard"
+          className="inline-flex min-h-11 w-fit items-center text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+        >
           ← Dashboard
         </Link>
         <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">Sign document</h1>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{envelope.title}</p>
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">Sign document</h1>
+          <p className="mt-1 break-words text-sm text-slate-600 dark:text-slate-400">{envelope.title}</p>
         </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+        <div className="rounded-xl border border-slate-200/80 bg-white/85 p-4 shadow-sm backdrop-blur-md dark:border-slate-700/70 dark:bg-slate-900/85">
           <p className="text-sm font-medium text-slate-900 dark:text-white">
             {currentSigner?.name}
           </p>
@@ -183,7 +198,7 @@ function SignPageContent() {
         {saveError && (
           <div
             role="alert"
-            className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-100"
+            className="rounded-xl border border-rose-200/90 bg-rose-50/95 p-3 text-sm text-rose-900 shadow-sm backdrop-blur-sm dark:border-rose-900/60 dark:bg-rose-950/60 dark:text-rose-100"
           >
             <p className="font-medium">Could not save</p>
             <p className="mt-1 text-rose-800 dark:text-rose-200">{saveError}</p>
@@ -197,13 +212,13 @@ function SignPageContent() {
           </div>
         )}
         {envelope.status === "completed" && (
-          <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+          <div className="space-y-3 rounded-xl border border-emerald-200/90 bg-emerald-50/95 p-4 text-sm text-emerald-900 shadow-sm backdrop-blur-sm dark:border-emerald-900/50 dark:bg-emerald-950/50 dark:text-emerald-100">
             <p>
               Completed{envelope.completedAt ? ` on ${new Date(envelope.completedAt).toLocaleString()}` : ""}.
             </p>
             <a
               href={signedPdfDownloadUrl(envelope.id, token)}
-              className="inline-flex w-full justify-center rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-emerald-500"
+              className="inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-emerald-500"
               download
             >
               Download signed PDF
@@ -212,27 +227,38 @@ function SignPageContent() {
         )}
       </aside>
 
-      <div className="min-w-0 flex-1 overflow-auto rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+      <div className="min-h-[min(70vh,720px)] min-w-0 flex-1 overflow-auto rounded-xl border border-slate-200/80 bg-white/85 p-3 shadow-sm backdrop-blur-md sm:min-h-0 dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-4">
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-lg border border-slate-300 px-3 py-1 text-sm disabled:opacity-40 dark:border-slate-600"
+              className="min-h-11 min-w-[4.5rem] rounded-lg border border-slate-300 px-3 text-sm font-medium disabled:opacity-40 dark:border-slate-600"
             >
               Prev
             </button>
+            <span className="text-sm tabular-nums text-slate-600 dark:text-slate-400">
+              {numPages != null ? (
+                <>
+                  Page {page} / {numPages}
+                </>
+              ) : (
+                <>Page {page}</>
+              )}
+            </span>
             <button
               type="button"
               disabled={numPages != null && page >= numPages}
               onClick={() => setPage((p) => p + 1)}
-              className="rounded-lg border border-slate-300 px-3 py-1 text-sm disabled:opacity-40 dark:border-slate-600"
+              className="min-h-11 min-w-[4.5rem] rounded-lg border border-slate-300 px-3 text-sm font-medium disabled:opacity-40 dark:border-slate-600"
             >
               Next
             </button>
           </div>
-          <span className="text-sm text-slate-500">Click highlighted fields that belong to you</span>
+          <p className="text-xs text-slate-500 sm:max-w-[55%] sm:text-right sm:text-sm">
+            Tap highlighted fields assigned to you
+          </p>
         </div>
         <PdfPageWithOverlay
           fileUrl={pdfUrl}
@@ -247,7 +273,7 @@ function SignPageContent() {
       </div>
 
       {activeField?.type === "signature" && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 sm:items-center">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-4 backdrop-blur-sm sm:items-center">
           <div className="w-full max-w-lg">
             <SignaturePad
               onApply={(dataUrl) => void updateField(activeField.id, dataUrl)}
@@ -258,28 +284,29 @@ function SignPageContent() {
       )}
 
       {activeField?.type === "text" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-4 backdrop-blur-sm sm:items-center">
+          <div className="w-full max-w-md rounded-t-2xl border border-slate-200/80 bg-white/95 p-6 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 sm:rounded-2xl">
             <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Text field</h2>
             <input
               value={textDraft}
               onChange={(e) => setTextDraft(e.target.value)}
-              className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-white"
+              className="mt-3 min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-base dark:border-slate-600 dark:bg-slate-800 dark:text-white"
               placeholder="Type here"
               autoFocus
+              enterKeyHint="done"
             />
-            <div className="mt-4 flex justify-end gap-2">
+            <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
                 onClick={() => setActiveFieldId(null)}
-                className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm dark:border-slate-600"
+                className="min-h-11 rounded-lg border border-slate-300 px-4 text-sm font-medium dark:border-slate-600"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => void updateField(activeField.id, textDraft.trim() || "—")}
-                className="rounded-lg bg-indigo-600 px-3 py-1.5 text-sm text-white hover:bg-indigo-500"
+                className="min-h-11 rounded-lg bg-indigo-600 px-4 text-sm font-semibold text-white hover:bg-indigo-500"
               >
                 Apply
               </button>
@@ -289,9 +316,9 @@ function SignPageContent() {
       )}
 
       {successKind && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/45 p-4 backdrop-blur-sm sm:items-center">
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900"
+            className="max-h-[85dvh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-slate-200/80 bg-white/95 p-6 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 sm:rounded-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="sign-success-title"
@@ -310,7 +337,7 @@ function SignPageContent() {
             {successKind === "full" && (
               <a
                 href={signedPdfDownloadUrl(envelope.id, token)}
-                className="mt-4 inline-flex w-full justify-center rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-emerald-500"
+                className="mt-4 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-emerald-500"
                 download
               >
                 Download signed PDF
@@ -319,7 +346,7 @@ function SignPageContent() {
             <button
               type="button"
               onClick={() => setSuccessKind(null)}
-              className="mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+              className="mt-4 w-full min-h-11 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
             >
               OK
             </button>
@@ -334,7 +361,7 @@ export default function SignPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-1 items-center justify-center text-slate-500">Loading…</div>
+        <div className="flex flex-1 items-center justify-center px-4 text-slate-500">Loading…</div>
       }
     >
       <SignPageContent />

@@ -10,12 +10,14 @@ type SignerRow = { name: string; email: string };
 export default function NewEnvelopePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [signers, setSigners] = useState<SignerRow[]>([
     { name: "", email: "" },
   ]);
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
 
   const updateSigner = (index: number, field: keyof SignerRow, value: string) => {
     setSigners((rows) => {
@@ -67,6 +69,8 @@ export default function NewEnvelopePage() {
     try {
       const form = new FormData();
       form.append("title", title.trim());
+      const desc = description.trim();
+      if (desc) form.append("description", desc);
       form.append("signersJson", JSON.stringify(cleaned));
       form.append("file", file);
       const envelope = await createEnvelope(form);
@@ -78,32 +82,115 @@ export default function NewEnvelopePage() {
     }
   };
 
+  const polishWithAi = () => {
+    void (async () => {
+      const rawTitle = title.trim();
+      const rawDesc = description.trim();
+      if (!rawTitle && !rawDesc) {
+        setError("Add a subject or some details below, then try again.");
+        return;
+      }
+      /* If only the description is filled, use it as context and a rough subject hint for the model */
+      const subjectForApi = rawTitle || (rawDesc.split(/\n/)[0]?.trim() || rawDesc).slice(0, 280);
+
+      setError(null);
+      setAiBusy(true);
+      try {
+        const res = await fetch("/api/ai/envelope-copy", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            subject: subjectForApi,
+            description: rawDesc || undefined,
+          }),
+        });
+        const data = (await res.json().catch(() => ({}))) as {
+          title?: string;
+          description?: string;
+          error?: string;
+        };
+        if (!res.ok) {
+          throw new Error(typeof data.error === "string" ? data.error : "AI request failed");
+        }
+        if (!data.title) throw new Error("Invalid response from AI");
+        setTitle(data.title);
+        setDescription((data.description ?? "").trim());
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not polish copy.");
+      } finally {
+        setAiBusy(false);
+      }
+    })();
+  };
+
   return (
-    <div className="mx-auto w-full max-w-lg flex-1 px-4 py-10">
+    <div className="mx-auto w-full max-w-lg flex-1 px-3 py-8 sm:px-4 sm:py-10">
       <Link
         href="/dashboard"
-        className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+        className="inline-flex min-h-11 items-center text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
       >
         ← Dashboard
       </Link>
-      <h1 className="mt-4 text-2xl font-bold text-slate-900 dark:text-white">New envelope</h1>
-      <p className="mt-1 text-slate-600 dark:text-slate-400">
-        Upload a PDF and list everyone who needs to sign. You will assign fields to each signer on
-        the next step.
-      </p>
+      <div className="mt-4 rounded-2xl border border-slate-200/80 bg-white/85 p-5 shadow-sm backdrop-blur-md dark:border-slate-700/70 dark:bg-slate-900/85 sm:p-6">
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white sm:text-2xl">New envelope</h1>
+        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+          Upload a PDF and list everyone who needs to sign. You will assign fields to each signer on
+          the next step.
+        </p>
 
-      <form onSubmit={onSubmit} className="mt-8 space-y-5">
+        <form onSubmit={onSubmit} className="mt-6 space-y-5 sm:mt-8">
+        <div className="flex flex-col gap-2 rounded-xl border border-violet-200/80 bg-violet-50/80 px-3 py-3 dark:border-violet-800/60 dark:bg-violet-950/30 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            Type a rough title and optional notes, then apply AI polish — fields below update instantly.
+          </p>
+          <button
+            type="button"
+            disabled={aiBusy || (!title.trim() && !description.trim())}
+            onClick={polishWithAi}
+            className="inline-flex shrink-0 items-center justify-center text-left text-sm font-semibold text-violet-700 underline decoration-violet-400 underline-offset-2 hover:text-violet-900 disabled:pointer-events-none disabled:opacity-45 dark:text-violet-300 dark:decoration-violet-500 dark:hover:text-violet-200"
+          >
+            {aiBusy ? "Enhancing…" : "Enhanced with AI"}
+          </button>
+        </div>
+
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-            Envelope title
+            Subject / title <span className="text-rose-600 dark:text-rose-400">*</span>
           </label>
           <input
             id="title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
-            placeholder="e.g. NDA — Acme Corp"
+            placeholder="e.g. nda acme — rough notes ok"
+            autoComplete="off"
           />
+        </div>
+
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+          >
+            Detailed description{" "}
+            <span className="font-normal text-slate-500 dark:text-slate-400">
+              (optional but helpful)
+            </span>
+          </label>
+          <textarea
+            id="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={4}
+            className="mt-1 w-full resize-y rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-900 dark:text-white"
+            placeholder="Parties, purpose, key dates, or anything the AI should respect when polishing…"
+          />
+          <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
+            Uses{" "}
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">OPENAI_API_KEY</code> on the
+            server. Use <span className="font-medium text-violet-700 dark:text-violet-300">Enhanced with AI</span>{" "}
+            above to rewrite both fields.
+          </p>
         </div>
 
         <div>
@@ -181,11 +268,12 @@ export default function NewEnvelopePage() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50"
+          className="w-full min-h-12 rounded-full bg-indigo-600 py-3 text-sm font-semibold text-white shadow-sm shadow-indigo-600/20 hover:bg-indigo-500 disabled:opacity-50"
         >
           {busy ? "Saving…" : "Continue to prepare"}
         </button>
-      </form>
+        </form>
+      </div>
     </div>
   );
 }

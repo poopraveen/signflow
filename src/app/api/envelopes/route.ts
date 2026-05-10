@@ -56,6 +56,7 @@ export async function POST(req: Request) {
     await getMongoClient();
     const form = await req.formData();
     const title = String(form.get("title") ?? "").trim();
+    const descriptionRaw = String(form.get("description") ?? "").trim();
     const file = form.get("file");
 
     if (!title) {
@@ -86,6 +87,7 @@ export async function POST(req: Request) {
     const envelope: Envelope = {
       id,
       title,
+      ...(descriptionRaw ? { description: descriptionRaw } : {}),
       status: "draft",
       signers,
       fields: [],
