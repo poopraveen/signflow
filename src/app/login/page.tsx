@@ -13,9 +13,13 @@ function LoginInner() {
   useEffect(() => {
     const err = searchParams.get("error");
     if (err === "Configuration") {
-      setError("Google sign-in is not configured (missing GOOGLE_CLIENT_ID / SECRET).");
+      setError(
+        "Auth configuration error: on Vercel set AUTH_SECRET (random base64), GOOGLE_CLIENT_ID, and GOOGLE_CLIENT_SECRET for Production. In Google Cloud OAuth client, add redirect URI https://YOUR_HOST/api/auth/callback/google. Check GET /api/health/auth for flags.",
+      );
+    } else if (err === "AccessDenied") {
+      setError("Sign-in was cancelled or access was denied.");
     } else if (err) {
-      setError("Sign-in failed. Try again.");
+      setError(`Sign-in failed (${err}). Try again or open /api/health/auth.`);
     }
   }, [searchParams]);
 

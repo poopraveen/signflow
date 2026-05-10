@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { nanoid } from "nanoid";
+import { getAuthSecret } from "@/lib/auth-env";
 import { getDb } from "@/lib/mongodb";
 
 const COLLECTION = "apiKeys";
@@ -15,9 +16,7 @@ async function ensureIndexes(): Promise<void> {
 }
 
 function authPepper(): string {
-  const s =
-    process.env.AUTH_SECRET?.trim() ||
-    process.env.NEXTAUTH_SECRET?.trim();
+  const s = getAuthSecret();
   if (!s) {
     throw new Error("AUTH_SECRET (or NEXTAUTH_SECRET) is required for API keys");
   }
