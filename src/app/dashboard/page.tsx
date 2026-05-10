@@ -6,6 +6,7 @@ import {
   getEnvelopesServerSnapshot,
   getEnvelopesSnapshot,
   refreshEnvelopes,
+  signedPdfDownloadUrl,
   subscribeEnvelopes,
 } from "@/lib/envelope-client";
 import type { Envelope } from "@/lib/types";
@@ -105,6 +106,15 @@ export default function DashboardPage() {
                       Links emailed to signers
                     </span>
                   ))}
+                {e.status === "completed" && (
+                  <a
+                    href={signedPdfDownloadUrl(e.id)}
+                    className="rounded-lg border border-emerald-600 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-900 hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-100 dark:hover:bg-emerald-900/40"
+                    download
+                  >
+                    Download signed PDF
+                  </a>
+                )}
                 <Link
                   href={`/envelope/${e.id}/prepare`}
                   className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"

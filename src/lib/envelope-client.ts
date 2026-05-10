@@ -125,3 +125,12 @@ export function envelopePdfUrl(id: string, signToken?: string | null): string {
   }
   return base;
 }
+
+/** Completed envelope: merged PDF with signatures/text burned in. Uses session cookie or ?token=. */
+export function signedPdfDownloadUrl(id: string, signToken?: string | null): string {
+  const base = `/api/envelopes/${id}/signed-pdf`;
+  if (signToken) {
+    return `${base}?token=${encodeURIComponent(signToken)}`;
+  }
+  return base;
+}

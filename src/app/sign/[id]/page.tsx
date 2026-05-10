@@ -9,6 +9,7 @@ import {
   envelopePdfUrl,
   fetchSignSession,
   saveEnvelopeToServer,
+  signedPdfDownloadUrl,
 } from "@/lib/envelope-client";
 import type { Envelope, Field } from "@/lib/types";
 
@@ -149,8 +150,17 @@ function SignPageContent() {
           </p>
         </div>
         {envelope.status === "completed" && (
-          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
-            Completed{envelope.completedAt ? ` on ${new Date(envelope.completedAt).toLocaleString()}` : ""}.
+          <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
+            <p>
+              Completed{envelope.completedAt ? ` on ${new Date(envelope.completedAt).toLocaleString()}` : ""}.
+            </p>
+            <a
+              href={signedPdfDownloadUrl(envelope.id, token)}
+              className="inline-flex w-full justify-center rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-emerald-500"
+              download
+            >
+              Download signed PDF
+            </a>
           </div>
         )}
       </aside>

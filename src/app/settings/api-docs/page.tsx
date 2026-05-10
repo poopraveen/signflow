@@ -125,6 +125,22 @@ export default async function ApiDocsPage() {
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Download signed PDF</h2>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          After an envelope is <strong>completed</strong>, signatures and text are merged into a new PDF (original +
+          overlays). Same access as the unsigned PDF: owner session cookie or signer{" "}
+          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">?token=</code>.
+        </p>
+        <p className="mt-3 font-mono text-sm text-indigo-700 dark:text-indigo-300">
+          GET {base}/api/envelopes/&lt;envelopeId&gt;/signed-pdf
+        </p>
+        <p className="mt-2 text-xs text-slate-500">
+          Response: <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">Content-Disposition: attachment</code>{" "}
+          with filename <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signed-…pdf</code>.
+        </p>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
         <h2 className="text-lg font-semibold text-slate-900 dark:text-white">OpenAPI 3</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
           Import into Swagger Editor, Postman, or Insomnia:

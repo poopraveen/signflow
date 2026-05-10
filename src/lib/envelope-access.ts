@@ -29,3 +29,16 @@ export function canDownloadEnvelopePdf(
   }
   return false;
 }
+
+/** Completed envelope with all field values; same access rules as original PDF download. */
+export function canDownloadSignedPdf(
+  envelope: Envelope,
+  sessionUserId: string | undefined,
+  signToken: string | null,
+): boolean {
+  if (envelope.status !== "completed") return false;
+  if (!envelope.fields.length) return false;
+  const allFilled = envelope.fields.every((f) => f.value && String(f.value).trim().length > 0);
+  if (!allFilled) return false;
+  return canDownloadEnvelopePdf(envelope, sessionUserId, signToken);
+}
