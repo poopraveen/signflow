@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 type KeyRow = { id: string; label: string; keyPreview: string; createdAt: string };
@@ -79,12 +80,23 @@ export default function ApiKeysSettingsPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white">API keys</h1>
-      <p className="mt-2 text-slate-600 dark:text-slate-400">
-        Use keys with the native SignFlow API (<code className="rounded bg-slate-100 px-1 dark:bg-slate-800">POST /api/v1/envelopes</code>
-        ). Send header <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">x-api-key</code> or{" "}
-        <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">Authorization: Bearer …</code>.
-      </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">API keys</h1>
+          <p className="mt-2 text-slate-600 dark:text-slate-400">
+            Use keys with the native SignFlow API (
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">POST /api/v1/envelopes</code>
+            ). Send header <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">x-api-key</code> or{" "}
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">Authorization: Bearer …</code>.
+          </p>
+        </div>
+        <Link
+          href="/settings/api-docs"
+          className="shrink-0 rounded-full border border-slate-300 px-4 py-2 text-sm font-medium hover:bg-slate-50 dark:border-slate-600 dark:hover:bg-slate-800"
+        >
+          API documentation
+        </Link>
+      </div>
 
       {error ? (
         <p className="mt-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/40 dark:text-red-200">

@@ -22,6 +22,12 @@ export function SignFlowHeader() {
                 Dashboard
               </Link>
               <Link
+                href="/settings/api-docs"
+                className="hover:text-indigo-600 dark:hover:text-indigo-400"
+              >
+                API docs
+              </Link>
+              <Link
                 href="/settings/api-keys"
                 className="hover:text-indigo-600 dark:hover:text-indigo-400"
               >

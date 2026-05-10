@@ -16,7 +16,7 @@ Open [http://localhost:3000](http://localhost:3000). Sign in with Google to use 
 
 **Third-party native API (no DocuSign):** `POST /api/v1/envelopes` with header `x-api-key: sfk_…` or `Authorization: Bearer sfk_…` (create a key under **Settings → API keys** after signing in).
 
-- **API specification (OpenAPI 3):** [`openapi/signflow-v1.openapi.yaml`](./openapi/signflow-v1.openapi.yaml) — import into [Swagger Editor](https://editor.swagger.io/), Postman, or Insomnia.
+- **API specification (OpenAPI 3):** [`openapi/signflow-v1.openapi.yaml`](./openapi/signflow-v1.openapi.yaml) — or after sign-in open **Settings → API docs** in the app. Raw spec URL on your deploy: `GET /api/docs/openapi`.
 - **GitHub (view online):** [openapi/signflow-v1.openapi.yaml on `main`](https://github.com/poopraveen/signflow/blob/main/openapi/signflow-v1.openapi.yaml)
 
 ## Deploy (Vercel)
