@@ -34,3 +34,26 @@ export function applyEnvelopePatch(existing: Envelope, incoming: Envelope): Enve
     signers: mergeSignersPreserveTokens(existing.signers, incoming.signers),
   };
 }
+
+/**
+ * Signer (token-auth) may only update `value` on their own fields. Completion is derived on the server.
+ */
+export function applySignerFieldPatch(
+  existing: Envelope,
+  incoming: Envelope,
+  signerId: string,
+): Envelope {
+  const fields = existing.fields.map((f) => {
+    if (f.signerId !== signerId) return f;
+    const inc = incoming.fields.find((x) => x.id === f.id);
+    if (!inc || inc.value === undefined || inc.value === null) return f;
+    return { ...f, value: String(inc.value) };
+  });
+  const allDone = fields.every((f) => f.value && String(f.value).trim().length > 0);
+  return {
+    ...existing,
+    fields,
+    status: allDone ? "completed" : existing.status,
+    completedAt: allDone ? new Date().toISOString() : existing.completedAt,
+  };
+}

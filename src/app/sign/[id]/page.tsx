@@ -38,6 +38,8 @@ function SignPageContent() {
   const [numPages, setNumPages] = useState<number | null>(null);
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const [textDraft, setTextDraft] = useState("");
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [successKind, setSuccessKind] = useState<"full" | "partial" | null>(null);
 
   const pdfUrl = id ? envelopePdfUrl(id, token) : null;
 
@@ -66,29 +68,58 @@ function SignPageContent() {
     };
   }, [id, token, router]);
 
-  const updateField = useCallback(async (fieldId: string, value: string) => {
-    let nextSnapshot: Envelope | null = null;
-    setEnvelope((prev) => {
-      if (!prev) return prev;
-      const fields = prev.fields.map((f) => (f.id === fieldId ? { ...f, value } : f));
-      const allDone = fields.every((f) => f.value && f.value.length > 0);
-      nextSnapshot = {
-        ...prev,
-        fields,
-        status: allDone ? "completed" : prev.status,
-        completedAt: allDone ? new Date().toISOString() : prev.completedAt,
-      };
-      return nextSnapshot;
-    });
-    setActiveFieldId(null);
-    if (nextSnapshot) {
+  const updateField = useCallback(
+    async (fieldId: string, value: string) => {
+      let nextSnapshot: Envelope | null = null;
+      let wasFullyComplete = false;
+      let wasMyPartComplete = false;
+      let targetSignerId: string | null = null;
+
+      setEnvelope((prev) => {
+        if (!prev) return prev;
+        const field = prev.fields.find((f) => f.id === fieldId);
+        targetSignerId = field?.signerId ?? null;
+        if (targetSignerId) {
+          wasMyPartComplete = prev.fields
+            .filter((f) => f.signerId === targetSignerId)
+            .every((f) => f.value && String(f.value).trim().length > 0);
+        }
+        wasFullyComplete = prev.status === "completed";
+        const fields = prev.fields.map((f) => (f.id === fieldId ? { ...f, value } : f));
+        const allDone = fields.every((f) => f.value && String(f.value).trim().length > 0);
+        nextSnapshot = {
+          ...prev,
+          fields,
+          status: allDone ? "completed" : prev.status,
+          completedAt: allDone ? new Date().toISOString() : prev.completedAt,
+        };
+        return nextSnapshot;
+      });
+      setActiveFieldId(null);
+      if (!nextSnapshot || !targetSignerId) return;
+
+      setSaveError(null);
       try {
-        await saveEnvelopeToServer(nextSnapshot);
-      } catch {
-        /* keep UI state; user can retry */
+        const saved = await saveEnvelopeToServer(nextSnapshot, token);
+        setEnvelope(saved);
+
+        if (saved.status === "completed" && !wasFullyComplete) {
+          setSuccessKind("full");
+          return;
+        }
+
+        const myNowComplete = saved.fields
+          .filter((f) => f.signerId === targetSignerId)
+          .every((f) => f.value && String(f.value).trim().length > 0);
+        if (myNowComplete && !wasMyPartComplete && saved.status !== "completed") {
+          setSuccessKind("partial");
+        }
+      } catch (err) {
+        setSaveError(err instanceof Error ? err.message : "Could not save your changes");
       }
-    }
-  }, []);
+    },
+    [token],
+  );
 
   const onFieldClick = (fieldId: string) => {
     if (!envelope || !signerId) return;
@@ -149,6 +180,22 @@ function SignPageContent() {
               : `${remaining} field${remaining !== 1 ? "s" : ""} left for you to complete.`}
           </p>
         </div>
+        {saveError && (
+          <div
+            role="alert"
+            className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-900 dark:border-rose-900 dark:bg-rose-950/50 dark:text-rose-100"
+          >
+            <p className="font-medium">Could not save</p>
+            <p className="mt-1 text-rose-800 dark:text-rose-200">{saveError}</p>
+            <button
+              type="button"
+              onClick={() => setSaveError(null)}
+              className="mt-2 text-xs font-medium text-rose-700 underline dark:text-rose-300"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         {envelope.status === "completed" && (
           <div className="space-y-3 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-100">
             <p>
@@ -237,6 +284,45 @@ function SignPageContent() {
                 Apply
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {successKind && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4">
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sign-success-title"
+          >
+            <h2
+              id="sign-success-title"
+              className="text-lg font-semibold text-slate-900 dark:text-white"
+            >
+              {successKind === "full" ? "Successfully submitted" : "Your signatures were saved"}
+            </h2>
+            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+              {successKind === "full"
+                ? "This document is fully signed. Everyone’s fields are complete."
+                : "Your part of this document is complete. Other signers may still need to sign before the envelope is finished."}
+            </p>
+            {successKind === "full" && (
+              <a
+                href={signedPdfDownloadUrl(envelope.id, token)}
+                className="mt-4 inline-flex w-full justify-center rounded-lg bg-emerald-600 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-emerald-500"
+                download
+              >
+                Download signed PDF
+              </a>
+            )}
+            <button
+              type="button"
+              onClick={() => setSuccessKind(null)}
+              className="mt-4 w-full rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+            >
+              OK
+            </button>
           </div>
         </div>
       )}

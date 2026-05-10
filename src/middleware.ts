@@ -1,6 +1,11 @@
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 
+/**
+ * Only matched paths require Google sign-in. Keep `/sign/*` and `/api/*` out of the matcher so
+ * signers can open their link and save signatures with `?token=` (or legacy single-signer rules)
+ * without a SignFlow account.
+ */
 export default auth((req) => {
   if (req.auth) return NextResponse.next();
   const path = req.nextUrl.pathname;

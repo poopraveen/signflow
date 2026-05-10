@@ -105,8 +105,15 @@ export async function createEnvelope(form: FormData): Promise<Envelope> {
   return env;
 }
 
-export async function saveEnvelopeToServer(envelope: Envelope): Promise<void> {
-  const res = await fetch(`/api/envelopes/${envelope.id}`, {
+export async function saveEnvelopeToServer(
+  envelope: Envelope,
+  signToken?: string | null,
+): Promise<Envelope> {
+  const q =
+    signToken && signToken.length > 0
+      ? `?token=${encodeURIComponent(signToken)}`
+      : "";
+  const res = await fetch(`/api/envelopes/${envelope.id}${q}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(envelope),
@@ -115,7 +122,13 @@ export async function saveEnvelopeToServer(envelope: Envelope): Promise<void> {
     const err = await res.json().catch(() => ({}));
     throw new Error(typeof err?.error === "string" ? err.error : "Failed to save envelope");
   }
-  await refreshEnvelopes();
+  const saved = (await res.json()) as Envelope;
+  try {
+    await refreshEnvelopes();
+  } catch {
+    /* Signers without a dashboard session cannot list envelopes */
+  }
+  return saved;
 }
 
 export function envelopePdfUrl(id: string, signToken?: string | null): string {
