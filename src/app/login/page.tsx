@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
+import { EnvelopeLoader } from "@/components/EnvelopeLoader";
 
 function LoginInner() {
   const searchParams = useSearchParams();
@@ -57,7 +58,9 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-1 items-center justify-center text-slate-500">Loading…</div>
+        <div className="flex flex-1 items-center justify-center py-16">
+          <EnvelopeLoader message="Loading sign-in…" />
+        </div>
       }
     >
       <LoginInner />

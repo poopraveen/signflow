@@ -58,6 +58,12 @@ export function SignFlowHeader() {
                 API keys
               </Link>
               <Link
+                href="/settings/email-branding"
+                className="inline-flex min-h-11 items-center rounded-lg px-2 hover:bg-slate-100 hover:text-indigo-600 dark:hover:bg-slate-800 dark:hover:text-indigo-400"
+              >
+                Email branding
+              </Link>
+              <Link
                 href="/envelope/new"
                 className="inline-flex min-h-11 items-center justify-center rounded-full bg-indigo-600 px-4 py-2 text-white shadow-sm shadow-indigo-600/20 hover:bg-indigo-500"
               >

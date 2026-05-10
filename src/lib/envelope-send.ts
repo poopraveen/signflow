@@ -1,6 +1,11 @@
 import { nanoid } from "nanoid";
+import {
+  buildSignInviteHtml,
+  buildSignInvitePlainText,
+} from "@/lib/email-templates/sign-invite-html";
 import { findEnvelopeById, replaceEnvelope } from "@/lib/envelope-repository";
 import { sendGmailEmail } from "@/lib/gmail";
+import { getTenantEmailBranding } from "@/lib/tenant-branding-repository";
 import type { Envelope } from "@/lib/types";
 
 export function publicOriginFromRequest(req: Request): string {
@@ -47,13 +52,25 @@ export async function executeSendEnvelope(
   );
   const emailResults: { email: string; ok: boolean; error?: string }[] = [];
 
+  const branding =
+    updated.ownerUserId != null && updated.ownerUserId.length > 0
+      ? await getTenantEmailBranding(updated.ownerUserId)
+      : null;
+
   if (gmailConfigured) {
     for (const link of inviteLinks) {
       try {
+        const inviteParams = {
+          signerName: link.name,
+          envelopeTitle: envelope.title,
+          signUrl: link.url,
+          appOrigin: origin,
+        };
         await sendGmailEmail({
           to: link.email,
           subject: `Signature requested: ${envelope.title}`,
-          text: `Hi ${link.name},\n\nPlease review and sign "${envelope.title}".\n\nYour personal signing link:\n${link.url}\n\nIf you did not expect this message, you can ignore it.`,
+          text: buildSignInvitePlainText(inviteParams, branding),
+          html: buildSignInviteHtml(inviteParams, branding),
         });
         emailResults.push({ email: link.email, ok: true });
       } catch (e) {

@@ -27,6 +27,30 @@ export interface Field {
 
 export type EnvelopeStatus = "draft" | "sent" | "completed";
 
+/**
+ * Per-tenant (per signed-in owner) branding for signing invitation emails.
+ * Tenant key is `ownerUserId` (Google subject).
+ */
+export interface TenantEmailBranding {
+  ownerUserId: string;
+  companyName?: string;
+  /** Public https URL to your logo (shown in the email header when set). */
+  logoUrl?: string;
+  /** Header / CTA gradient start, e.g. #4f46e5 */
+  primaryColor?: string;
+  /** Gradient mid tone, e.g. #7c3aed */
+  accentColor?: string;
+  /** Replaces default intro paragraph in the standard template (plain text). */
+  introText?: string;
+  /** Extra line in the footer (plain text). */
+  footerNote?: string;
+  /** When true, `customHtml` is used as the message body (see placeholders). */
+  useCustomHtml?: boolean;
+  /** HTML fragment; allowed placeholders: {{SIGNER_NAME}}, {{DOCUMENT_TITLE}}, {{SIGN_URL}}, {{APP_ORIGIN}}, {{COMPANY_NAME}}, {{SIGN_BUTTON}} */
+  customHtml?: string;
+  updatedAt: string;
+}
+
 export interface Envelope {
   id: string;
   title: string;

@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { nanoid } from "nanoid";
+import { EnvelopeLoader } from "@/components/EnvelopeLoader";
 import {
   envelopePdfUrl,
   fetchEnvelope,
@@ -19,7 +20,9 @@ const PdfPageWithOverlay = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-96 items-center justify-center text-slate-500">Loading PDF viewer…</div>
+      <div className="flex h-96 items-center justify-center py-8">
+        <EnvelopeLoader variant="compact" message="Opening PDF…" />
+      </div>
     ),
   },
 );
@@ -217,7 +220,9 @@ export default function PrepareEnvelopePage() {
 
   if (!envelope) {
     return (
-      <div className="flex flex-1 items-center justify-center px-4 text-slate-500">Loading…</div>
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <EnvelopeLoader message="Loading envelope…" />
+      </div>
     );
   }
 

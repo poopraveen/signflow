@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
+import { EnvelopeLoader } from "@/components/EnvelopeLoader";
 import type { Field } from "@/lib/types";
 
 import "react-pdf/dist/Page/AnnotationLayer.css";
@@ -56,7 +57,9 @@ export function PdfPageWithOverlay({
       file={fileUrl}
       onLoadSuccess={({ numPages: n }) => onNumPages(n)}
       loading={
-        <div className="flex h-96 items-center justify-center text-slate-500">Loading PDF…</div>
+        <div className="flex h-96 items-center justify-center py-8">
+          <EnvelopeLoader variant="compact" message="Loading PDF…" showHint={false} />
+        </div>
       }
       error={
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-800">

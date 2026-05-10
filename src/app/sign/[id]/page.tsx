@@ -4,6 +4,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { EnvelopeLoader } from "@/components/EnvelopeLoader";
 import { SignaturePad } from "@/components/SignaturePad";
 import {
   envelopePdfUrl,
@@ -19,8 +20,8 @@ const PdfPageWithOverlay = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[50vh] items-center justify-center px-4 text-center text-sm text-slate-500">
-        Loading PDF viewer…
+      <div className="flex min-h-[50vh] items-center justify-center px-4 py-8">
+        <EnvelopeLoader variant="compact" message="Opening document…" />
       </div>
     ),
   },
@@ -164,7 +165,9 @@ function SignPageContent() {
 
   if (!envelope || !signerId) {
     return (
-      <div className="flex flex-1 items-center justify-center px-4 text-slate-500">Loading…</div>
+      <div className="flex flex-1 items-center justify-center px-4 py-12">
+        <EnvelopeLoader message="Preparing your signing session…" />
+      </div>
     );
   }
 
@@ -318,11 +321,16 @@ function SignPageContent() {
       {successKind && (
         <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/45 p-4 backdrop-blur-sm sm:items-center">
           <div
-            className="max-h-[85dvh] w-full max-w-md overflow-y-auto rounded-t-2xl border border-slate-200/80 bg-white/95 p-6 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 sm:rounded-2xl"
+            className="max-h-[85dvh] w-full max-w-md overflow-hidden rounded-t-2xl border border-slate-200/80 bg-white/95 shadow-xl backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/95 sm:rounded-2xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="sign-success-title"
           >
+            <div
+              className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-emerald-500"
+              aria-hidden
+            />
+            <div className="max-h-[calc(85dvh-6px)] overflow-y-auto p-6">
             <h2
               id="sign-success-title"
               className="text-lg font-semibold text-slate-900 dark:text-white"
@@ -345,11 +353,15 @@ function SignPageContent() {
             )}
             <button
               type="button"
-              onClick={() => setSuccessKind(null)}
-              className="mt-4 w-full min-h-11 rounded-lg bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500"
+              onClick={() => {
+                setSuccessKind(null);
+                router.replace("/");
+              }}
+              className="mt-4 w-full min-h-11 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-3 py-2 text-sm font-semibold text-white shadow-md shadow-indigo-500/25 hover:from-indigo-500 hover:to-violet-500"
             >
-              OK
+              Done — go to SignFlow home
             </button>
+            </div>
           </div>
         </div>
       )}
@@ -361,7 +373,9 @@ export default function SignPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex flex-1 items-center justify-center px-4 text-slate-500">Loading…</div>
+        <div className="flex flex-1 items-center justify-center px-4 py-12">
+          <EnvelopeLoader message="Loading…" />
+        </div>
       }
     >
       <SignPageContent />
