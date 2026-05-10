@@ -21,6 +21,38 @@ export default async function ApiDocsPage() {
     ]
   }'`;
 
+  const curlFieldsExample = `curl -sS -X POST "${v1Url}" \\
+  -H "Content-Type: application/json" \\
+  -H "x-api-key: YOUR_SFK_KEY" \\
+  -d '{
+    "title": "Contract",
+    "documentPdfBase64": "JVBERi0xLjQK...",
+    "signers": [
+      { "email": "alice@example.com", "name": "Alice", "routingOrder": 1 },
+      { "email": "bob@example.com", "name": "Bob", "routingOrder": 2 }
+    ],
+    "fields": [
+      {
+        "pageIndex": 0,
+        "signerIndex": 0,
+        "type": "signature",
+        "x": 0.1,
+        "y": 0.75,
+        "width": 0.35,
+        "height": 0.08
+      },
+      {
+        "pageIndex": 1,
+        "signerEmail": "bob@example.com",
+        "type": "signature",
+        "x": 0.2,
+        "y": 0.82,
+        "width": 0.38,
+        "height": 0.07
+      }
+    ]
+  }'`;
+
   return (
     <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-10">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -102,8 +134,8 @@ export default async function ApiDocsPage() {
             is configured)
           </li>
           <li>
-            <code className="text-indigo-600 dark:text-indigo-400">fields</code> — custom placements; omit for
-            default signature boxes per signer
+            <code className="text-indigo-600 dark:text-indigo-400">fields</code> — see{" "}
+            <strong>Signature &amp; field positions</strong> below; omit to use default boxes on page 1
           </li>
         </ul>
         <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-slate-500">Success response</h3>
@@ -118,9 +150,81 @@ export default async function ApiDocsPage() {
       </section>
 
       <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Example (curl)</h2>
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">
+          Signature &amp; field positions (<code className="text-base font-mono">fields</code>)
+        </h2>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+          Each entry in <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">fields</code> is one signing
+          box (or date/text). Coordinates match the SignFlow UI: the PDF page is treated as a unit square for layout
+          (same as the prepare screen).
+        </p>
+
+        <h3 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-200">Coordinate system</h3>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-slate-300">
+          <li>
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">pageIndex</code> — 0-based page number (
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">0</code> = first page).
+          </li>
+          <li>
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">x</code> — distance from the{" "}
+            <strong>left</strong> edge, as a fraction of page width (<code>0</code> = left, <code>1</code> = right).
+          </li>
+          <li>
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">y</code> — distance from the{" "}
+            <strong>top</strong> edge, as a fraction of page height (<code>0</code> = top, <code>1</code> = bottom).
+          </li>
+          <li>
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">width</code>,{" "}
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">height</code> — box size as fractions of
+            page width and height (defaults in the API: <code>0.35</code> × <code>0.06</code> if omitted).
+          </li>
+        </ul>
+        <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
+          Example: <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">x: 0.1, y: 0.8, width: 0.35, height: 0.08</code>{" "}
+          places a wide box near the <strong>bottom-left</strong> area of the page.
+        </p>
+
+        <h3 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-200">Who signs this field?</h3>
+        <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+          Each field must reference one signer (after <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signers</code>{" "}
+          is sorted by <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">routingOrder</code>):
+        </p>
+        <ul className="mt-2 list-inside list-disc space-y-1 text-sm text-slate-700 dark:text-slate-300">
+          <li>
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signerIndex</code> —{" "}
+            <code>0</code> = first signer in that sorted list, <code>1</code> = second, …
+          </li>
+          <li>
+            <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signerEmail</code> — alternative: same email
+            as in <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signers[].email</code> (case-insensitive
+            match).
+          </li>
+        </ul>
+
+        <h3 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-200">Field type</h3>
+        <p className="mt-2 text-sm text-slate-700 dark:text-slate-300">
+          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">type</code>:{" "}
+          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signature</code> (default),{" "}
+          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">date</code>, or{" "}
+          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">text</code>.
+        </p>
+
+        <h3 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-200">Default layout (no fields)</h3>
+        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+          If you omit <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">fields</code>, SignFlow adds one{" "}
+          <code className="rounded bg-slate-100 px-1 dark:bg-slate-800">signature</code> per signer on{" "}
+          <strong>page 1</strong> only, stacked vertically with preset <code>x/y/width/height</code>.
+        </p>
+      </section>
+
+      <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Example (curl) — defaults</h2>
         <pre className="mt-4 max-h-80 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-relaxed text-slate-100">
           {curlExample}
+        </pre>
+        <h3 className="mt-6 text-sm font-semibold text-slate-800 dark:text-slate-200">Example — custom positions</h3>
+        <pre className="mt-3 max-h-96 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-relaxed text-slate-100">
+          {curlFieldsExample}
         </pre>
       </section>
 

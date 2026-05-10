@@ -11,7 +11,16 @@ info:
     **Base URL:** `https://<your-signflow-host>` (e.g. production Vercel URL).
 
     **Signing:** Signers receive email when Gmail is configured on the server; otherwise use `inviteLinks` from the response.
-  version: 1.0.0
+
+    **Field positions (`fields` array):** Each item is a rectangle on a PDF page. Use **normalized coordinates** (0–1), same as the SignFlow prepare UI:
+    - `pageIndex` — 0-based (0 = first page).
+    - `x` — distance from the **left** edge, as a fraction of page width.
+    - `y` — distance from the **top** edge, as a fraction of page height.
+    - `width`, `height` — box size as fractions of page width and height.
+    - Assign the field to a signer with **`signerIndex`** (0-based order after sorting signers by `routingOrder`) **or** **`signerEmail`** (must match a signer).
+    - `type`: `signature` (default), `date`, or `text`.
+    If `fields` is omitted, one default `signature` field per signer is placed on page 1.
+  version: 1.0.1
 
 servers:
   - url: https://{host}
@@ -61,6 +70,33 @@ paths:
                     - email: signer@example.com
                       name: Jane Doe
                       routingOrder: 1
+              customFieldPositions:
+                summary: Custom signature positions (multi-page)
+                value:
+                  title: Contract
+                  documentPdfBase64: JVBERi0xLjQKJeLjz9MK...
+                  signers:
+                    - email: alice@example.com
+                      name: Alice
+                      routingOrder: 1
+                    - email: bob@example.com
+                      name: Bob
+                      routingOrder: 2
+                  fields:
+                    - pageIndex: 0
+                      signerIndex: 0
+                      type: signature
+                      x: 0.1
+                      y: 0.75
+                      width: 0.35
+                      height: 0.08
+                    - pageIndex: 1
+                      signerEmail: bob@example.com
+                      type: signature
+                      x: 0.2
+                      y: 0.82
+                      width: 0.38
+                      height: 0.07
       responses:
         "200":
           description: Envelope created (and sent if send !== false)
@@ -153,7 +189,9 @@ components:
             $ref: "#/components/schemas/V1Signer"
         fields:
           type: array
-          description: Optional custom field placements; if omitted, default signature fields are placed per signer on page 1.
+          description: |
+            Optional. Custom signature/date/text boxes. If omitted, one default `signature` field per signer is added on **page 0** with preset geometry.
+            Each object needs **either** `signerIndex` **or** `signerEmail` to assign the field to a signer.
           items:
             $ref: "#/components/schemas/V1Field"
 
@@ -179,6 +217,8 @@ components:
 
     V1Field:
       type: object
+      description: |
+        Rectangle on a PDF page. **Signer:** set `signerIndex` (0 = first signer after sorting by `routingOrder`) or `signerEmail` (must match `signers[].email`).
       required:
         - x
         - y
@@ -187,13 +227,15 @@ components:
           type: integer
           minimum: 0
           default: 0
+          description: Zero-based page index (first page = 0).
         signerIndex:
           type: integer
           minimum: 0
-          description: Index into the `signers` array.
+          description: Zero-based index into signers **after** they are sorted by `routingOrder`.
         signerEmail:
           type: string
-          description: Alternative to signerIndex — match signer by email.
+          format: email
+          description: Alternative to `signerIndex`; matched case-insensitively to `signers[].email`.
         type:
           type: string
           enum: [signature, date, text]
@@ -202,18 +244,24 @@ components:
           type: number
           minimum: 0
           maximum: 1
-          description: Left position, 0–1 relative to page width.
+          description: Left edge of box; 0 = left of page, 1 = right (fraction of page width).
         y:
           type: number
           minimum: 0
           maximum: 1
-          description: Top position, 0–1 relative to page height.
+          description: Top edge of box; 0 = top of page, 1 = bottom (fraction of page height).
         width:
           type: number
+          minimum: 0.02
+          maximum: 1
           default: 0.35
+          description: Box width as fraction of page width.
         height:
           type: number
+          minimum: 0.02
+          maximum: 1
           default: 0.06
+          description: Box height as fraction of page height.
 
     CreateEnvelopeResponse:
       type: object
