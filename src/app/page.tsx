@@ -1,65 +1,73 @@
-import Image from "next/image";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="mx-auto flex max-w-6xl flex-1 flex-col gap-16 px-4 py-16">
+      <section className="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
+            DocuSign-style MVP
           </p>
+          <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 dark:text-white lg:text-5xl">
+            Send agreements. Tag PDFs. Collect signatures.
+          </h1>
+          <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
+            SignFlow uses a Next.js API and MongoDB: envelope data lives in a collection and PDFs
+            in GridFS so you can share signing links across devices. Add{" "}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
+              MONGODB_URI
+            </code>{" "}
+            (see <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">.env.example</code>
+            ) to run it locally or against Atlas.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link
+              href="/envelope/new"
+              className="inline-flex items-center justify-center rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+            >
+              Create an envelope
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center rounded-full border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-800"
+            >
+              Open dashboard
+            </Link>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+        <div className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm dark:border-slate-800 dark:bg-slate-900">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">What you can do</h2>
+          <ul className="mt-4 space-y-4 text-slate-600 dark:text-slate-400">
+            <li className="flex gap-3">
+              <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                1
+              </span>
+              <span>
+                <strong className="text-slate-900 dark:text-white">Upload a PDF</strong> and add
+                signers with name and email.
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                2
+              </span>
+              <span>
+                <strong className="text-slate-900 dark:text-white">Prepare the envelope</strong>{" "}
+                by dropping signature, date, and text fields onto each page.
+              </span>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
+                3
+              </span>
+              <span>
+                <strong className="text-slate-900 dark:text-white">Send & sign</strong> via a shareable
+                link. Signers draw or type, then you complete the flow.
+              </span>
+            </li>
+          </ul>
         </div>
-      </main>
+      </section>
     </div>
   );
 }

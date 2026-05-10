@@ -1,0 +1,258 @@
+openapi: 3.0.3
+info:
+  title: SignFlow — Third-party DocuSign bridge
+  description: |
+    Server-to-server API: your system sends PDFs and signer metadata; SignFlow creates DocuSign envelopes using JWT.
+
+    **Auth:** every request (except health) must include header `x-integration-api-key` matching the deployer's `INTEGRATION_API_KEY`.
+
+    **Coordinates:** `xPosition` / `yPosition` are DocuSign PDF page coordinates (origin top-left), in pixels (same units as DocuSign eSignature REST `signHereTabs`).
+
+    **Routing:** `routingOrder` is a positive integer. Lower values sign first. Matching values sign in parallel at that step.
+  version: 1.1.0
+
+servers:
+  - url: https://{host}
+    variables:
+      host:
+        default: your-signflow-host.example
+        description: Public HTTPS host where SignFlow is deployed
+
+tags:
+  - name: Integration
+    description: Third-party bridge
+  - name: Health
+    description: Configuration flags (no secrets)
+
+paths:
+  /api/integrations/docusign/health:
+    get:
+      tags: [Health]
+      summary: Readiness flags
+      description: Returns booleans only; does not require an API key.
+      responses:
+        "200":
+          description: Status
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - docusignJwtReady
+                  - thirdPartyBridgeReady
+                  - oauthBasePath
+                  - hasAccountIdOverride
+                properties:
+                  docusignJwtReady:
+                    type: boolean
+                  thirdPartyBridgeReady:
+                    type: boolean
+                  oauthBasePath:
+                    type: string
+                  hasAccountIdOverride:
+                    type: boolean
+
+  /api/integrations/docusign/envelopes:
+    post:
+      tags: [Integration]
+      summary: Create and send a DocuSign envelope
+      security:
+        - IntegrationApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnvelopeRequest"
+            examples:
+              multiSigner:
+                summary: Two signers, sequential routing, custom positions
+                value:
+                  emailSubject: Please sign the agreement
+                  documentPdfBase64: JVBERi0xLjQKJeLjz9MK...
+                  documentName: agreement.pdf
+                  status: sent
+                  externalReference: CRM-ORDER-9921
+                  signers:
+                    - email: alice@example.com
+                      name: Alice Example
+                      routingOrder: 1
+                      signHere:
+                        pageNumber: 1
+                        xPosition: 120
+                        yPosition: 650
+                    - email: bob@example.com
+                      name: Bob Example
+                      routingOrder: 2
+                      signHereTabs:
+                        - pageNumber: 2
+                          xPosition: 100
+                          yPosition: 700
+              legacySingle:
+                summary: Legacy single signer (default tab on page 1)
+                value:
+                  emailSubject: Please sign
+                  signerEmail: signer@example.com
+                  signerName: Jane Doe
+                  documentPdfBase64: JVBERi0xLjQKJeLjz9MK...
+      responses:
+        "200":
+          description: Envelope created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateEnvelopeResponse"
+        "400":
+          description: Invalid body or validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "401":
+          description: Missing or wrong API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "403":
+          description: DocuSign JWT consent may be required
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ErrorBody"
+                  - type: object
+                    properties:
+                      consentUrl:
+                        type: string
+                        format: uri
+        "500":
+          description: DocuSign or server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "503":
+          description: Integration not configured on server
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+
+components:
+  securitySchemes:
+    IntegrationApiKey:
+      type: apiKey
+      in: header
+      name: x-integration-api-key
+
+  schemas:
+    CreateEnvelopeRequest:
+      type: object
+      required:
+        - emailSubject
+        - documentPdfBase64
+      properties:
+        emailSubject:
+          type: string
+        documentPdfBase64:
+          type: string
+          description: Base64-encoded PDF (no data URL prefix).
+        documentName:
+          type: string
+          default: document.pdf
+        status:
+          type: string
+          enum: [sent, created]
+          default: sent
+        externalReference:
+          type: string
+          description: Stored as DocuSign text custom field `externalReference`.
+        signers:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/BridgeSigner"
+          description: |
+            Preferred shape for multi-signer envelopes. Each signer must include `routingOrder` and either `signHere` or `signHereTabs`.
+        signerEmail:
+          type: string
+          format: email
+          description: Legacy; only if `signers` is omitted.
+        signerName:
+          type: string
+          description: Legacy; only if `signers` is omitted.
+      oneOf:
+        - required: [signers]
+        - required: [signerEmail, signerName]
+      description: |
+        Either provide `signers` (recommended) or legacy `signerEmail` + `signerName` (single signer, default Sign Here on page 1).
+
+    BridgeSigner:
+      type: object
+      required:
+        - email
+        - name
+        - routingOrder
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        routingOrder:
+          type: integer
+          minimum: 1
+          description: Signing sequence; lower first; equal = parallel.
+        signHere:
+          $ref: "#/components/schemas/SignHereTab"
+        signHereTabs:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/SignHereTab"
+      oneOf:
+        - required: [signHere]
+        - required: [signHereTabs]
+
+    SignHereTab:
+      type: object
+      required:
+        - pageNumber
+        - xPosition
+        - yPosition
+      properties:
+        documentId:
+          type: string
+          default: "1"
+          description: Matches `documentId` of the uploaded PDF (always `1` for this API).
+        pageNumber:
+          oneOf:
+            - type: integer
+              minimum: 1
+            - type: string
+        xPosition:
+          oneOf:
+            - type: number
+            - type: string
+        yPosition:
+          oneOf:
+            - type: number
+            - type: string
+
+    CreateEnvelopeResponse:
+      type: object
+      required:
+        - envelopeId
+      properties:
+        envelopeId:
+          type: string
+        status:
+          type: string
+          description: DocuSign envelope status after create (e.g. sent).
+
+    ErrorBody:
+      type: object
+      properties:
+        error:
+          type: string
