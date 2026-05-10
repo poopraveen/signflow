@@ -143,6 +143,231 @@
   .app-page-bg::after {
     animation: none;
   }
+
+  .hero-banner__bg,
+  .hero-banner__orb,
+  .hero-banner__shine {
+    animation: none !important;
+  }
+
+  .hero-banner__bg {
+    background-size: 100% 100% !important;
+  }
+}
+
+/* --- Home hero: envelope-inspired animated banner -------------------------------- */
+.hero-banner {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  margin-inline: auto;
+  padding: clamp(2.75rem, 7vw, 5.25rem) 1rem clamp(3rem, 9vw, 6rem);
+  border-radius: 0 0 1.75rem 1.75rem;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 24px 48px -24px rgba(99, 102, 241, 0.25);
+}
+
+@media (min-width: 640px) {
+  .hero-banner {
+    border-radius: 0 0 2rem 2rem;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.dark .hero-banner {
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.06) inset,
+    0 24px 56px -20px rgba(0, 0, 0, 0.45);
+}
+
+.hero-banner__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    118deg,
+    rgba(238, 242, 255, 0.95) 0%,
+    rgba(224, 231, 255, 0.88) 22%,
+    rgba(236, 253, 245, 0.9) 48%,
+    rgba(245, 243, 255, 0.92) 72%,
+    rgba(241, 245, 249, 0.95) 100%
+  );
+  background-size: 280% 280%;
+  animation: hero-envelope-mesh 22s ease-in-out infinite;
+}
+
+.dark .hero-banner__bg {
+  background: linear-gradient(
+    118deg,
+    rgba(30, 27, 75, 0.92) 0%,
+    rgba(30, 41, 59, 0.94) 30%,
+    rgba(15, 23, 42, 0.96) 55%,
+    rgba(30, 58, 95, 0.9) 80%,
+    rgba(15, 23, 42, 0.98) 100%
+  );
+}
+
+.hero-banner__orb {
+  position: absolute;
+  z-index: 0;
+  border-radius: 50%;
+  filter: blur(56px);
+  pointer-events: none;
+  opacity: 0.85;
+  animation: hero-orb-drift 24s ease-in-out infinite;
+}
+
+.hero-banner__orb--a {
+  width: min(75vw, 480px);
+  height: min(75vw, 480px);
+  top: -42%;
+  right: -12%;
+  background: radial-gradient(
+    circle,
+    rgba(99, 102, 241, 0.38) 0%,
+    rgba(129, 140, 248, 0.12) 52%,
+    transparent 72%
+  );
+}
+
+.hero-banner__orb--b {
+  width: min(85vw, 520px);
+  height: min(85vw, 520px);
+  bottom: -48%;
+  left: -18%;
+  background: radial-gradient(
+    circle,
+    rgba(52, 211, 153, 0.32) 0%,
+    rgba(139, 92, 246, 0.18) 48%,
+    transparent 74%
+  );
+  animation-duration: 28s;
+  animation-delay: -11s;
+}
+
+.hero-banner__orb--c {
+  width: min(45vw, 300px);
+  height: min(45vw, 300px);
+  top: 28%;
+  left: 18%;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.14), transparent 68%);
+  animation-duration: 19s;
+  animation-delay: -5s;
+  opacity: 0.7;
+}
+
+.dark .hero-banner__orb--a {
+  opacity: 0.55;
+  background: radial-gradient(
+    circle,
+    rgba(129, 140, 248, 0.35) 0%,
+    transparent 70%
+  );
+}
+
+.dark .hero-banner__orb--b {
+  opacity: 0.45;
+}
+
+.dark .hero-banner__orb--c {
+  opacity: 0.35;
+}
+
+/* Subtle “paper fold” texture — like envelope panels */
+.hero-banner__fold {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.055;
+  background: repeating-linear-gradient(
+    -32deg,
+    transparent 0,
+    transparent 48px,
+    rgba(79, 70, 229, 0.35) 48px,
+    rgba(79, 70, 229, 0.35) 49px
+  );
+}
+
+.dark .hero-banner__fold {
+  opacity: 0.035;
+  background: repeating-linear-gradient(
+    -32deg,
+    transparent 0,
+    transparent 52px,
+    rgba(165, 180, 252, 0.2) 52px,
+    rgba(165, 180, 252, 0.2) 53px
+  );
+}
+
+/* Soft top sheen */
+.hero-banner__shine {
+  position: absolute;
+  z-index: 0;
+  top: -40%;
+  left: 10%;
+  width: 55%;
+  height: 70%;
+  border-radius: 50%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.45) 0%,
+    transparent 65%
+  );
+  pointer-events: none;
+  animation: hero-shine 16s ease-in-out infinite;
+}
+
+.dark .hero-banner__shine {
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.06) 0%,
+    transparent 60%
+  );
+  opacity: 0.8;
+}
+
+.hero-banner__content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes hero-envelope-mesh {
+  0%,
+  100% {
+    background-position: 12% 35%;
+  }
+  50% {
+    background-position: 88% 65%;
+  }
+}
+
+@keyframes hero-orb-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  40% {
+    transform: translate(4%, 6%) scale(1.05);
+  }
+  70% {
+    transform: translate(-3%, 2%) scale(0.96);
+  }
+}
+
+@keyframes hero-shine {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(8%, 4%) rotate(6deg);
+    opacity: 1;
+  }
 }
 
 body {
