@@ -1,0 +1,285 @@
+openapi: 3.0.3
+info:
+  title: SignFlow — Native envelope API (v1)
+  description: |
+    Create PDF signing envelopes from your backend. Envelopes belong to the Google user who **created the API key** in SignFlow (Settings → API keys).
+
+    **Authentication:** send your secret key in every request (never expose it in browsers or public repos).
+    - Header `x-api-key: sfk_...`, **or**
+    - Header `Authorization: Bearer sfk_...`
+
+    **Base URL:** `https://<your-signflow-host>` (e.g. production Vercel URL).
+
+    **Signing:** Signers receive email when Gmail is configured on the server; otherwise use `inviteLinks` from the response.
+  version: 1.0.0
+
+servers:
+  - url: https://{host}
+    variables:
+      host:
+        default: your-signflow.example.com
+        description: Host where SignFlow is deployed (no trailing slash)
+
+tags:
+  - name: Envelopes
+    description: Create and send envelopes
+
+paths:
+  /api/v1/envelopes:
+    post:
+      tags: [Envelopes]
+      summary: Create envelope (optionally send and email signers)
+      security:
+        - ApiKeyHeader: []
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnvelopeRequest"
+            examples:
+              minimal:
+                summary: Two signers, default signature fields, send + email
+                value:
+                  title: Order agreement
+                  documentPdfBase64: JVBERi0xLjQKJeLjz9MK...
+                  signers:
+                    - email: alice@example.com
+                      name: Alice Example
+                      routingOrder: 1
+                    - email: bob@example.com
+                      name: Bob Example
+                      routingOrder: 2
+              draftOnly:
+                summary: Create draft only (no send)
+                value:
+                  title: Draft contract
+                  send: false
+                  documentPdfBase64: JVBERi0xLjQKJeLjz9MK...
+                  signers:
+                    - email: signer@example.com
+                      name: Jane Doe
+                      routingOrder: 1
+      responses:
+        "200":
+          description: Envelope created (and sent if send !== false)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateEnvelopeResponse"
+        "400":
+          description: Invalid body or not a PDF
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "401":
+          description: Missing or invalid API key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "500":
+          description: Server or send failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+        "503":
+          description: MongoDB or AUTH_SECRET / key hashing not configured
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorBody"
+
+  /api/health/auth:
+    get:
+      tags: [Envelopes]
+      summary: Auth env check (no secrets)
+      description: Returns booleans only — use after deploy to verify AUTH_SECRET and Google OAuth vars.
+      security: []
+      responses:
+        "200":
+          description: Status flags and hints
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  authReady:
+                    type: boolean
+                  hasAuthSecret:
+                    type: boolean
+                  hasGoogleOAuth:
+                    type: boolean
+                  hints:
+                    type: array
+                    items:
+                      type: string
+
+components:
+  securitySchemes:
+    ApiKeyHeader:
+      type: apiKey
+      in: header
+      name: x-api-key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: sfk_...
+
+  schemas:
+    CreateEnvelopeRequest:
+      type: object
+      required:
+        - title
+        - documentPdfBase64
+        - signers
+      properties:
+        title:
+          type: string
+        documentPdfBase64:
+          type: string
+          description: Base64-encoded PDF bytes (no data URL prefix). Max 16 MB decoded.
+        send:
+          type: boolean
+          default: true
+          description: If true (default), envelope is sent, tokens issued, and emails sent when Gmail is configured.
+        signers:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/V1Signer"
+        fields:
+          type: array
+          description: Optional custom field placements; if omitted, default signature fields are placed per signer on page 1.
+          items:
+            $ref: "#/components/schemas/V1Field"
+
+    V1Signer:
+      type: object
+      required:
+        - email
+        - name
+      properties:
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        routingOrder:
+          type: integer
+          minimum: 1
+          description: Lower signs first; equal values sign in parallel.
+        order:
+          type: integer
+          minimum: 0
+          description: Alternative to routingOrder — 0-based order (first signer = 0).
+
+    V1Field:
+      type: object
+      required:
+        - x
+        - y
+      properties:
+        pageIndex:
+          type: integer
+          minimum: 0
+          default: 0
+        signerIndex:
+          type: integer
+          minimum: 0
+          description: Index into the `signers` array.
+        signerEmail:
+          type: string
+          description: Alternative to signerIndex — match signer by email.
+        type:
+          type: string
+          enum: [signature, date, text]
+          default: signature
+        x:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Left position, 0–1 relative to page width.
+        y:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: Top position, 0–1 relative to page height.
+        width:
+          type: number
+          default: 0.35
+        height:
+          type: number
+          default: 0.06
+
+    CreateEnvelopeResponse:
+      type: object
+      properties:
+        envelopeId:
+          type: string
+        status:
+          type: string
+          enum: [draft, sent]
+        envelope:
+          $ref: "#/components/schemas/PublicEnvelope"
+        inviteLinks:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+              name:
+                type: string
+              url:
+                type: string
+                format: uri
+        gmailConfigured:
+          type: boolean
+        emailsAttempted:
+          type: boolean
+        emailResults:
+          type: array
+          items:
+            type: object
+            properties:
+              email:
+                type: string
+              ok:
+                type: boolean
+              error:
+                type: string
+
+    PublicEnvelope:
+      type: object
+      description: Envelope as returned to clients (no sign tokens or owner id).
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        signers:
+          type: array
+          items:
+            type: object
+        fields:
+          type: array
+          items:
+            type: object
+        createdAt:
+          type: string
+          format: date-time
+
+    ErrorBody:
+      type: object
+      properties:
+        error:
+          type: string
+        envelopeId:
+          type: string
+          description: Present on some 500 responses after insert.

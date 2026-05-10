@@ -14,14 +14,17 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Sign in with Google to use the dashboard, create envelopes, and manage **API keys** under Settings.
 
-**Third-party native API (no DocuSign):** `POST /api/v1/envelopes` with header `x-api-key: sfk_…` (create a key after signing in). JSON body: `title`, `documentPdfBase64`, `signers` (`email`, `name`, `routingOrder`), optional `fields`, optional `send` (default `true`).
+**Third-party native API (no DocuSign):** `POST /api/v1/envelopes` with header `x-api-key: sfk_…` or `Authorization: Bearer sfk_…` (create a key under **Settings → API keys** after signing in).
+
+- **API specification (OpenAPI 3):** [`openapi/signflow-v1.openapi.yaml`](./openapi/signflow-v1.openapi.yaml) — import into [Swagger Editor](https://editor.swagger.io/), Postman, or Insomnia.
+- **GitHub (view online):** [openapi/signflow-v1.openapi.yaml on `main`](https://github.com/poopraveen/signflow/blob/main/openapi/signflow-v1.openapi.yaml)
 
 ## Deploy (Vercel)
 
 1. Connect this repo in [Vercel](https://vercel.com).
 2. Add variables from **[`.env.production.example`](./.env.production.example)** including **`AUTH_SECRET`**, **`GOOGLE_CLIENT_ID`**, **`GOOGLE_CLIENT_SECRET`**, and the Google OAuth redirect `https://<your-host>/api/auth/callback/google`.
 3. Set **`APP_ORIGIN`** to your production URL (e.g. `https://your-app.vercel.app`).
-4. Optional DocuSign bridge spec: [`openapi/third-party-docusign-bridge.openapi.yaml`](./openapi/third-party-docusign-bridge.openapi.yaml).
+4. Native API spec: [`openapi/signflow-v1.openapi.yaml`](./openapi/signflow-v1.openapi.yaml). Optional DocuSign bridge: [`openapi/third-party-docusign-bridge.openapi.yaml`](./openapi/third-party-docusign-bridge.openapi.yaml).
 
 ## Scripts
 
