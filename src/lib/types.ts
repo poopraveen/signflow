@@ -35,4 +35,6 @@ export interface Envelope {
   fields: Field[];
   createdAt: string;
   completedAt?: string;
+  /** Google `sub` (or future auth subject) — not exposed to browsers. */
+  ownerUserId?: string;
 }

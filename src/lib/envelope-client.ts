@@ -118,6 +118,10 @@ export async function saveEnvelopeToServer(envelope: Envelope): Promise<void> {
   await refreshEnvelopes();
 }
 
-export function envelopePdfUrl(id: string): string {
-  return `/api/envelopes/${id}/pdf`;
+export function envelopePdfUrl(id: string, signToken?: string | null): string {
+  const base = `/api/envelopes/${id}/pdf`;
+  if (signToken) {
+    return `${base}?token=${encodeURIComponent(signToken)}`;
+  }
+  return base;
 }

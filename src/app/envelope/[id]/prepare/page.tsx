@@ -49,6 +49,12 @@ export default function PrepareEnvelopePage() {
   const [sendOpen, setSendOpen] = useState(false);
   const [inviteLinks, setInviteLinks] = useState<InviteLink[]>([]);
   const [sendError, setSendError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sendMeta, setSendMeta] = useState<{
+    gmailConfigured: boolean;
+    emailsAttempted?: boolean;
+    emailResults?: { email: string; ok: boolean; error?: string }[];
+  } | null>(null);
   const overlayWrapRef = useRef<HTMLDivElement>(null);
   const envelopeRef = useRef<Envelope | null>(null);
 
@@ -188,15 +194,23 @@ export default function PrepareEnvelopePage() {
       const env = envelopeRef.current;
       if (!env || env.fields.length === 0) return;
       setSendError(null);
+      setSending(true);
       try {
         await saveEnvelopeToServer(env);
         const result = await sendEnvelopeNow(id);
         setEnvelope(result.envelope);
         envelopeRef.current = result.envelope;
         setInviteLinks(result.inviteLinks);
+        setSendMeta({
+          gmailConfigured: result.gmailConfigured,
+          emailsAttempted: result.emailsAttempted,
+          emailResults: result.emailResults,
+        });
         setSendOpen(true);
       } catch (e) {
         setSendError(e instanceof Error ? e.message : "Send failed");
+      } finally {
+        setSending(false);
       }
     })();
   };
@@ -289,10 +303,10 @@ export default function PrepareEnvelopePage() {
           <button
             type="button"
             onClick={send}
-            disabled={envelope.fields.length === 0}
+            disabled={sending || envelope.fields.length === 0}
             className="rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-40"
           >
-            Send envelope
+            {sending ? "Sending…" : "Send envelope"}
           </button>
           {sendError && (
             <p className="rounded-lg border border-red-200 bg-red-50 px-2 py-1.5 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-200">
@@ -350,11 +364,52 @@ export default function PrepareEnvelopePage() {
       </div>
 
       {sendOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="send-success-title"
+        >
           <div className="max-h-[90vh] max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-slate-900">
-            <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Envelope sent</h2>
-            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
-              Personal links (also emailed if Gmail is configured):
+            <div className="flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/40">
+              <span
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-lg text-white"
+                aria-hidden
+              >
+                ✓
+              </span>
+              <div>
+                <h2
+                  id="send-success-title"
+                  className="text-lg font-semibold text-emerald-950 dark:text-emerald-100"
+                >
+                  Sent successfully
+                </h2>
+                <p className="mt-1 text-sm text-emerald-900/90 dark:text-emerald-200/90">
+                  {sendMeta?.gmailConfigured && sendMeta.emailsAttempted
+                    ? "Invitation emails were sent to each signer (see below if any failed)."
+                    : sendMeta?.gmailConfigured === false
+                      ? "Gmail is not configured on the server — copy the signing links below and share them manually."
+                      : "Share the personal signing links below with each signer."}
+                </p>
+              </div>
+            </div>
+            {sendMeta?.emailResults?.some((r) => !r.ok) ? (
+              <ul className="mt-3 space-y-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-100">
+                {sendMeta.emailResults
+                  .filter((r) => !r.ok)
+                  .map((r) => (
+                    <li key={r.email}>
+                      Email to {r.email} failed{r.error ? `: ${r.error}` : ""}
+                    </li>
+                  ))}
+              </ul>
+            ) : null}
+            <p className="mt-4 text-sm font-medium text-slate-700 dark:text-slate-300">
+              Signing links
+            </p>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Each link is unique to the signer. You can copy them here anytime from the dashboard.
             </p>
             <ul className="mt-3 space-y-3">
               {inviteLinks.map((link) => (
@@ -394,7 +449,10 @@ export default function PrepareEnvelopePage() {
             </div>
             <button
               type="button"
-              onClick={() => setSendOpen(false)}
+              onClick={() => {
+                setSendOpen(false);
+                setSendMeta(null);
+              }}
               className="mt-3 w-full text-sm text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
             >
               Close

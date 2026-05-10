@@ -38,7 +38,7 @@ function SignPageContent() {
   const [activeFieldId, setActiveFieldId] = useState<string | null>(null);
   const [textDraft, setTextDraft] = useState("");
 
-  const pdfUrl = id ? envelopePdfUrl(id) : null;
+  const pdfUrl = id ? envelopePdfUrl(id, token) : null;
 
   useEffect(() => {
     if (!id) return;

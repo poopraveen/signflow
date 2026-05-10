@@ -1,12 +1,13 @@
 import type { Envelope, Signer } from "@/lib/types";
 
-/** Remove signing secrets before sending envelope JSON to the browser. */
+/** Remove signing secrets and ownership before sending envelope JSON to the browser. */
 export function sanitizeEnvelopeForClient(envelope: Envelope): Envelope {
+  const { ownerUserId: _o, ...rest } = envelope;
   return {
-    ...envelope,
+    ...rest,
     signers: envelope.signers.map((s) => {
-      const { signToken: _t, ...rest } = s;
-      return rest as Signer;
+      const { signToken: _t, ...srest } = s;
+      return srest as Signer;
     }),
   };
 }
@@ -29,6 +30,7 @@ export function mergeSignersPreserveTokens(
 export function applyEnvelopePatch(existing: Envelope, incoming: Envelope): Envelope {
   return {
     ...incoming,
+    ownerUserId: existing.ownerUserId,
     signers: mergeSignersPreserveTokens(existing.signers, incoming.signers),
   };
 }

@@ -6,19 +6,18 @@ export default function Home() {
       <section className="grid gap-10 lg:grid-cols-2 lg:items-center">
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-indigo-600 dark:text-indigo-400">
-            DocuSign-style MVP
+            E-signatures in your stack
           </p>
           <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900 dark:text-white lg:text-5xl">
             Send agreements. Tag PDFs. Collect signatures.
           </h1>
           <p className="mt-4 text-lg text-slate-600 dark:text-slate-400">
-            SignFlow uses a Next.js API and MongoDB: envelope data lives in a collection and PDFs
-            in GridFS so you can share signing links across devices. Add{" "}
+            Sign in with Google, send PDFs for signature, and issue API keys so other systems can
+            create envelopes and email signers via{" "}
             <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">
-              MONGODB_URI
-            </code>{" "}
-            (see <code className="rounded bg-slate-100 px-1.5 py-0.5 text-sm dark:bg-slate-800">.env.example</code>
-            ) to run it locally or against Atlas.
+              POST /api/v1/envelopes
+            </code>
+            . Data lives in MongoDB; PDFs use GridFS.
           </p>
           <div className="mt-8 flex flex-wrap gap-4">
             <Link

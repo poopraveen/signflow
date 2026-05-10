@@ -11,6 +11,7 @@ async function ensureIndexes(): Promise<void> {
   if (indexesEnsured) return;
   const db = await getDb();
   await db.collection(COLLECTION).createIndex({ id: 1 }, { unique: true });
+  await db.collection(COLLECTION).createIndex({ ownerUserId: 1, createdAt: -1 });
   indexesEnsured = true;
 }
 
@@ -34,15 +35,19 @@ function toEnvelope(doc: Record<string, unknown>): Envelope {
     fields: doc.fields as Envelope["fields"],
     createdAt,
     completedAt,
+    ownerUserId:
+      typeof doc.ownerUserId === "string" && doc.ownerUserId.length > 0
+        ? doc.ownerUserId
+        : undefined,
   };
 }
 
-export async function listEnvelopes(): Promise<Envelope[]> {
+export async function listEnvelopesForUser(userId: string): Promise<Envelope[]> {
   await ensureIndexes();
   const db = await getDb();
   const docs = await db
     .collection(COLLECTION)
-    .find({})
+    .find({ ownerUserId: userId })
     .sort({ createdAt: -1 })
     .toArray();
   return docs.map((d) => toEnvelope(d as Record<string, unknown>));
@@ -75,6 +80,7 @@ export async function insertEnvelope(envelope: Envelope, pdfBuffer: Buffer): Pro
     fields: envelope.fields,
     createdAt: new Date(envelope.createdAt),
     completedAt: envelope.completedAt ? new Date(envelope.completedAt) : undefined,
+    ...(envelope.ownerUserId ? { ownerUserId: envelope.ownerUserId } : {}),
   });
 }
 
@@ -90,6 +96,7 @@ export async function replaceEnvelope(envelope: Envelope): Promise<void> {
         signers: envelope.signers,
         fields: envelope.fields,
         completedAt: envelope.completedAt ? new Date(envelope.completedAt) : null,
+        ...(envelope.ownerUserId ? { ownerUserId: envelope.ownerUserId } : {}),
       },
     },
   );

@@ -1,13 +1,19 @@
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
-import { insertEnvelope, listEnvelopes } from "@/lib/envelope-repository";
+import { auth } from "@/auth";
+import { insertEnvelope, listEnvelopesForUser } from "@/lib/envelope-repository";
 import { sanitizeEnvelopeForClient } from "@/lib/envelope-utils";
 import { getMongoClient } from "@/lib/mongodb";
 import type { Envelope, Signer } from "@/lib/types";
 
 export async function GET() {
   try {
-    const items = await listEnvelopes();
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    await getMongoClient();
+    const items = await listEnvelopesForUser(session.user.id);
     return NextResponse.json(items.map(sanitizeEnvelopeForClient));
   } catch (e) {
     const message = e instanceof Error ? e.message : "Server error";
@@ -43,6 +49,10 @@ function parseSignersFromForm(form: FormData): Signer[] | null {
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     await getMongoClient();
     const form = await req.formData();
     const title = String(form.get("title") ?? "").trim();
@@ -80,6 +90,7 @@ export async function POST(req: Request) {
       signers,
       fields: [],
       createdAt: new Date().toISOString(),
+      ownerUserId: session.user.id,
     };
 
     await insertEnvelope(envelope, buf);
